@@ -46,7 +46,7 @@ class _HomePageState extends State<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Text(
-              "Pedro Quiñones – Código 123456",
+              "Pedro Quiñones – Código 230211018",
               style: TextStyle(fontSize: 18),
               textAlign: TextAlign.center,
             ),
