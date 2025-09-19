@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,116 +8,335 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
+    return MaterialApp.router(
+      title: 'Taller Flutter',
+      routerConfig: _router,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+/// -------------------------
+/// RUTAS CON go_router
+/// -------------------------
+final GoRouter _router = GoRouter(
+  routes: [
+    GoRoute(
+      path: '/',
+      builder: (context, state) => const HomeScreen(),
+    ),
+    GoRoute(
+      path: '/paso_parametros',
+      builder: (context, state) => const PasoParametrosScreen(),
+    ),
+    GoRoute(
+      path: '/detalle/:parametro/:metodo',
+      builder: (context, state) {
+        final parametro = state.pathParameters['parametro']!;
+        final metodo = state.pathParameters['metodo']!;
+        return DetalleScreen(parametro: parametro, metodoNavegacion: metodo);
+      },
+    ),
+    GoRoute(
+      path: '/ciclo_vida',
+      builder: (context, state) => const CicloVidaScreen(),
+    ),
+    GoRoute(
+      path: '/widgets',
+      builder: (context, state) => const WidgetsScreen(),
+    ),
+  ],
+);
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+/// -------------------------
+/// HOME
+/// -------------------------
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      appBar: AppBar(title: const Text("Inicio")),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          children: [
+            const Text("Bienvenido al Taller de Flutter 🚀"),
+            ElevatedButton(
+              onPressed: () => context.go('/paso_parametros'),
+              child: const Text("Paso de Parámetros"),
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/ciclo_vida'),
+              child: const Text("Ciclo de Vida"),
+            ),
+            ElevatedButton(
+              onPressed: () => context.go('/widgets'),
+              child: const Text("Widgets"),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// -------------------------
+/// PASO DE PARÁMETROS
+/// -------------------------
+class PasoParametrosScreen extends StatefulWidget {
+  const PasoParametrosScreen({super.key});
+
+  @override
+  State<PasoParametrosScreen> createState() => _PasoParametrosScreenState();
+}
+
+class _PasoParametrosScreenState extends State<PasoParametrosScreen> {
+  final TextEditingController controller = TextEditingController();
+
+  void goToDetalle(String metodo) {
+    String valor = controller.text;
+    if (valor.isEmpty) return;
+
+    // Imprime en consola qué método se usó
+    print("🔹 Navegación con: $metodo, valor: $valor");
+
+    switch (metodo) {
+      case 'go':
+        context.go('/detalle/$valor/$metodo');
+        break;
+      case 'push':
+        context.push('/detalle/$valor/$metodo');
+        break;
+      case 'replace':
+        context.replace('/detalle/$valor/$metodo');
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Paso de Parámetros")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Ingrese un valor',
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => goToDetalle('go'),
+              child: const Text('Ir con Go'),
+            ),
+            ElevatedButton(
+              onPressed: () => goToDetalle('push'),
+              child: const Text('Ir con Push'),
+            ),
+            ElevatedButton(
+              onPressed: () => goToDetalle('replace'),
+              child: const Text('Ir con Replace'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// -------------------------
+/// DETALLE
+/// -------------------------
+class DetalleScreen extends StatelessWidget {
+  final String parametro;
+  final String metodoNavegacion;
+
+  const DetalleScreen({
+    super.key,
+    required this.parametro,
+    required this.metodoNavegacion,
+  });
+
+  void _volver(BuildContext context) {
+    if (metodoNavegacion == 'push') {
+      context.pop(); // Con push sí se puede volver
+    } else {
+      context.go('/paso_parametros'); // Con go y replace hay que redirigir
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Imprime cuando llega a esta pantalla
+    print("📌 Llegó a DetalleScreen con parámetro: $parametro y método: $metodoNavegacion");
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Detalle")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Parámetro recibido: $parametro"),
+            Text("Método: $metodoNavegacion"),
+            ElevatedButton(
+              onPressed: () => _volver(context),
+              child: const Text("Volver"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// -------------------------
+/// CICLO DE VIDA
+/// -------------------------
+class CicloVidaScreen extends StatefulWidget {
+  const CicloVidaScreen({super.key});
+
+  @override
+  State<CicloVidaScreen> createState() => _CicloVidaScreenState();
+}
+
+class _CicloVidaScreenState extends State<CicloVidaScreen> {
+  String texto = "Texto inicial 🟢";
+
+  @override
+  void initState() {
+    super.initState();
+    print("🟢 initState() → se ejecuta al crear la pantalla");
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print("🟡 didChangeDependencies() → cuando cambian dependencias");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("🔵 build() → construyendo la pantalla");
+    return Scaffold(
+      appBar: AppBar(title: const Text("Ciclo de Vida")),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(texto),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  texto = "Texto actualizado 🟠";
+                  print("🟠 setState() → estado actualizado");
+                });
+              },
+              child: const Text("Actualizar Texto"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    print("🔴 dispose() → cuando la pantalla se destruye");
+    super.dispose();
+  }
+}
+
+/// -------------------------
+/// WIDGETS DEMO (GridView + TabBar + FAB)
+/// -------------------------
+class WidgetsScreen extends StatefulWidget {
+  const WidgetsScreen({super.key});
+
+  @override
+  State<WidgetsScreen> createState() => _WidgetsScreenState();
+}
+
+class _WidgetsScreenState extends State<WidgetsScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Widgets"),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: "Grid"),
+            Tab(text: "Lista"),
+          ],
+        ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+                  itemCount: 6,
+                  itemBuilder: (context, index) => Card(
+                    child: Center(child: Text("Item ${index + 1}")),
+                  ),
+                ),
+                ListView(
+                  children: const [
+                    ListTile(title: Text("Elemento A")),
+                    ListTile(title: Text("Elemento B")),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Card(
+            margin: const EdgeInsets.all(12),  // margen externo
+            elevation: 4,                       // sombra para resaltar el card
+            child: ListTile(                    // contenido del card
+              leading: const Icon(
+                Icons.info,
+                color: Colors.blue,
+              ),                                // icono al inicio
+              title: const Text("Card como tercer widget"),
+              subtitle: const Text("Muestra información destacada"),
+            ),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () {
+          print("⚡ FAB presionado en WidgetsScreen");
+        },
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 }
